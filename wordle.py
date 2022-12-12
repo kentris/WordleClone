@@ -30,7 +30,6 @@ class Wordle:
         (e.g. number of guesses, letters that have been guessed, etc.)"""
         # Select random word to guess
         self.current_word = random.choice(self.word_list)
-        self.current_word = 'marry'
         # Generate a unique-ish id for the game derived from the word
         # Note: 'unique-ish' is due to trimming hash to last 6 digits
         m = hashlib.md5()

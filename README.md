@@ -26,7 +26,7 @@ There are two commands that can be called with this API:
     * This creates a new Wordle game for the user to play. 
     * This must be called before the user is able to make any guesses, 
     but may be called at any time to create a new game. 
-* http://localhost/guess/<word>/
+* http://localhost/guess/<word\>/
     * This allows the user to make a guess for the current game. 
     * A maximum of 6 (valid) guesses are allowed to be made before the 
     game tells you the answer. 

@@ -3,8 +3,11 @@ import random
 
 
 class Wordle:
+    """An implementation of the NY Times Wordle game [https://www.nytimes.com/games/wordle/index.html].
+    Users must guess an unknown 5 letter word within 6 attempts. Words that are guessed are evaluated
+    against the hidden word, and the user is informed of whether guessed letters are in the correct
+    spot, are in the wrong position, or aren't in the word at all."""
     def __init__(self):
-        # Read in our list of valid words
         with open('words.txt') as f:
             self.word_list = f.read().splitlines()
         self.num_guesses = 0
@@ -18,6 +21,11 @@ class Wordle:
         self.is_word_guessed = False
 
     def create_new_game(self):
+        """Creates a new Wordle game.
+
+        Randomly selects a word from the provided word list, creates a game_id based off of
+        a hashing of the selected word, and resets relevant information for the game state
+        (e.g. number of guesses, letters that have been guessed, etc.)"""
         # Select random word to guess
         self.current_word = random.choice(self.word_list)
         # Generate a unique-ish id for the game derived from the word
@@ -25,7 +33,7 @@ class Wordle:
         m = hashlib.md5()
         m.update(self.current_word.encode("utf-8"))
         self.game_id = int(m.hexdigest(), 16) % (10**6)
-        # Reset number of guesses and wrongly guessed letters
+        # Reset relevant game state information
         self.num_guesses = 0
         self.incorrectly_guessed_letters = []
         self.known_letters_in_word = []
@@ -33,14 +41,32 @@ class Wordle:
         self.is_word_guessed = False
 
     def can_guess(self):
-        # There is a current word, less than 6 guesses, and word not already guessed
+        """Determines whether Wordle can currently guess a word.
+
+        :return: Boolean for whether the current game state can make guesses.
+
+        Wordle can only make a guess if the game has started (i.e. already has a `current_word`),
+        there are less than 6 guesses, and the user has not already guessed the word."""
         return self.current_word and (self.num_guesses < self.max_num_guesses) and (not self.is_word_guessed)
 
-    def is_valid_guess(self, word):
-        # User's guess is in list of words and has 5 characters
+    def is_valid_guess(self, word: str):
+        """Determines if the user-provided word is a valid guess.
+
+        :param word: The user-provided word.
+        :return: Boolean for whether the user's word is valid.
+
+        A valid guess must be in our list of words and be exactly 5 characters."""
         return word.lower() in self.word_list and len(word) == self.word_length
 
-    def make_guess(self, word):
+    def make_guess(self, word: str):
+        """Evaluate the user-provided word against the current game. The results are stored in `guess_result`
+        which are then passed back to inform the user about how their guess matched up against the actual
+        word.
+
+        :param word: The user-provided word.
+        :return guess_result: A dictionary containing all the relevant information for the current game
+            state to allow the user to make informed decisions for future guesses.
+        """
         # Increment our number of guesses
         self.num_guesses += 1
 
@@ -68,6 +94,7 @@ class Wordle:
                 guess_result[f"letter{i + 1}"] = "incorrect"
                 is_match = "incorrect"
 
+        # Store our results to return the server
         # Add overall guess result and incorrect letters
         guess_result["guess_result"] = is_match
         if is_match == "correct":

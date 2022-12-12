@@ -1,5 +1,7 @@
+from collections import Counter
 import hashlib
 import random
+import re
 
 
 class Wordle:
@@ -28,6 +30,7 @@ class Wordle:
         (e.g. number of guesses, letters that have been guessed, etc.)"""
         # Select random word to guess
         self.current_word = random.choice(self.word_list)
+        self.current_word = 'marry'
         # Generate a unique-ish id for the game derived from the word
         # Note: 'unique-ish' is due to trimming hash to last 6 digits
         m = hashlib.md5()
@@ -83,15 +86,34 @@ class Wordle:
                 self.known_letters[i] = letter_guess.upper()
                 known_letters_in_word.append(letter_guess.upper())
                 guess_result[f"letter{i+1}"] = "correct"
-            # If guess is in word, but different spot
-            elif letter_guess in self.current_word:
-                known_letters_in_word.append(letter_guess.upper())
-                guess_result[f"letter{i+1}"] = "wrong position"
-                is_match = "incorrect"
             # If guess is incorrect, store result, wrong letter, and indicate word is not a match
-            else:
+            elif letter_guess not in self.current_word:
                 incorrectly_guessed_letters.append(letter_guess.upper())
                 guess_result[f"letter{i + 1}"] = "incorrect"
+                is_match = "incorrect"
+            # If guess is in word, but different spot
+            elif letter_guess in self.current_word:
+                # Need to consider edge cases of a letter occurring multiple times in guess v. once in actual
+                # I.E. We don't want the user to assume a letter occurs more often than it actually does
+                # If the number of positive matches of a specific letter and the current letter's cardinality
+                #   in the guessed word are less than the total frequency, that letter will be tagged in the
+                #   wrong position, otherwise, it will be marked as a wrong letter
+
+                # Frequency of specified letter in actual word
+                cnt = Counter(self.current_word)
+                letter_frequency = cnt[letter_guess]
+                # Number of positive matches made in current guess with specific letter
+                positive_matches = sum([1 for l1, l2 in zip(word, self.current_word) if l1 == l2 and letter_guess == l1])
+                # Determine the cardinality of the specified letter's occurrence in the guessed word
+                letter_indices = [i.start() for i in re.finditer(letter_guess, word)]
+                letter_cardinality = letter_indices.index(i)
+
+                if positive_matches + letter_cardinality < letter_frequency:
+                    guess_result[f"letter{i + 1}"] = "wrong position"
+                else:
+                    guess_result[f"letter{i + 1}"] = "incorrect"
+
+                known_letters_in_word.append(letter_guess.upper())
                 is_match = "incorrect"
 
         # Store our results to return the server

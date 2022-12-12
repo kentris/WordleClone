@@ -1,16 +1,19 @@
 from flask import Flask
-from flask_restful import Resource, Api
+from flask_restful import Resource, Api, reqparse
 from wordle import Wordle
 
 
 app = Flask("WordleAPI")
 api = Api(app)
 current_game = Wordle()
+parser = reqparse.RequestParser()
+parser.add_argument('word', type=str, location="json")
+parser.add_argument('game_id', type=int, location="json")
 
 
 class Game(Resource):
     """Generates a new Wordle game."""
-    def put(self):
+    def post(self):
         current_game.create_new_game()
         response = {
             'game_id': current_game.game_id
@@ -20,7 +23,10 @@ class Game(Resource):
 
 class Guess(Resource):
     """Called for guessing words in Wordle game."""
-    def put(self, word):
+    def post(self):
+        args = parser.parse_args()
+        game_id = args.get('game_id')
+        word = args.get('word')
         # Check if we can even make a guess with current game state
         if current_game.can_guess():
             if current_game.is_valid_guess(word):
@@ -40,7 +46,7 @@ class Guess(Resource):
 
 
 api.add_resource(Game, '/new_game/')
-api.add_resource(Guess, '/guess/<string:word>')
+api.add_resource(Guess, '/guess/')
 
 
 if __name__ == "__main__":

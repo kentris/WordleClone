@@ -26,7 +26,7 @@ There are two commands that can be called with this API:
     * This creates a new Wordle game for the user to play. 
     * This must be called before the user is able to make any guesses, 
     but may be called at any time to create a new game. 
-* http://localhost/guess/<word\>/
+* http://localhost/guess/
     * This allows the user to make a guess for the current game. 
     * A maximum of 6 (valid) guesses are allowed to be made before the 
     game tells you the answer. 
@@ -37,7 +37,7 @@ Samples of the command being called from the command line are included below alo
 
 <b>New Game</b>
 ```bash
-curl http://localhost:5000/new_game/ -X PUT
+curl http://localhost:5000/new_game/ -X POST
 ```
 ```json
 {
@@ -47,8 +47,10 @@ curl http://localhost:5000/new_game/ -X PUT
 
 <b>Guess Word</b>
 ```bash
-curl http://localhost:5000/guess/layer -X PUT
+curl http://localhost:5000/guess/ -H "Content-Type: application/json" -d "{\"word\": \"layer\", \"game_id\": 123456}" -X POST
 ```
+** Note: The backslashes for the json data is required on Windows as the command line doesn't recognize single quotes
+around JSON data.  
 ```json
 {
   "letter1": "incorrect", 
